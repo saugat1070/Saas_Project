@@ -1,0 +1,1 @@
+import sequlize from "sequelize";
