@@ -1,5 +1,5 @@
-import { Table,Column,Model,DataType, PrimaryKey } from "sequelize-typescript";
-
+import { Table,Column,Model,DataType, PrimaryKey, AllowNull } from "sequelize-typescript";
+import { Role } from "../../config/interface";
 
 @Table({
     tableName : "User",
@@ -25,14 +25,15 @@ class User extends Model{
     declare password : string
 
     @Column({
-        type : DataType.STRING
+        type : DataType.STRING,
+        unique : true,
+        allowNull : false
     })
     declare email : string
 
     @Column({
-        type : DataType.ENUM("teacher","institute","super-admin","student"),
-        defaultValue : "student"
-        
+        type : DataType.ENUM(Role.institute,Role.student,Role.teacher,Role.superAdmin),
+        defaultValue : Role.student
     })
     declare role : string
 

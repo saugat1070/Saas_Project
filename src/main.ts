@@ -10,8 +10,10 @@ app.use(session({
     resave : false,
     saveUninitialized : true,
     cookie : {
-        secure : false
+        secure : false,
+        maxAge : 24 * 60 * 60 * 1000
     }
+    
 }))
 
 app.use("/v1/api/auth",authRoute);

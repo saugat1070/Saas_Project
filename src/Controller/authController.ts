@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 
 import { Session } from "express-session";
+import { tokenGen } from "../utils/tokenGen";
 
 interface IEXRequest extends Request {
   session: Session & { user?: any };
@@ -88,13 +89,15 @@ class AuthController {
         });
         return;
       }
-      req.session.user = {
+      /* req.session.user = {
         email : findUser.email,
         userId: String(findUser.id)
-      };
+      }; */
+      const token = tokenGen(findUser.id)
       res.status(200).json({
         status: "success",
         message: "user login successfully",
+        token : token
       });
     } catch (error: any) {
       res.status(500).json({
@@ -105,7 +108,12 @@ class AuthController {
   }
 
   public async fetchProfile(req: IEXRequest, res: Response) {
-    console.log(req.session);
+    if(!req.session.user){
+        res.status(401).json({
+            status : "fail",
+            message : "please login first"
+        })
+    }
     const { userId, email } = req.session.user;
     if (!userId || !email) {
       res.status(404).json({
