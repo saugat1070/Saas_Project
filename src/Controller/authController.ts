@@ -1,0 +1,127 @@
+import User from "../database/model/userModel";
+import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+
+import { Session } from "express-session";
+
+interface IEXRequest extends Request {
+  session: Session & { user?: any };
+}
+
+class AuthController {
+  constructor() {}
+  public async Register(req: Request, res: Response) {
+    const { email, password, username } = req.body;
+    if (!email || !password || !username) {
+      res.status(400).json({
+        status: "fail",
+        message: "please provide all data",
+      });
+      return;
+    }
+    try {
+      const [findUser] = await User.findAll({
+        where: {
+          email: email,
+        },
+      });
+      if (findUser) {
+        res.status(403).json({
+          status: "fail",
+          message: "user with this email is already created",
+        });
+        return;
+      }
+
+      const userRegister = await User.create({
+        ...req.body,
+        password: bcrypt.hashSync(password, 10),
+      });
+      if (!userRegister) {
+        res.status(501).json({
+          status: "fail",
+          message: "user registration is failed on database",
+        });
+      }
+      res.status(200).json({
+        status: "success",
+        message: "user register successfully",
+      });
+    } catch (err: any) {
+      res.status(500).json({
+        status: "fail",
+        message: "Error on databae",
+        error: err.message,
+      });
+    }
+  }
+
+  public async loginUser(req: IEXRequest, res: Response) {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).json({
+        message: "email and password must be provided",
+      });
+      return;
+    }
+    try {
+      const [findUser] = await User.findAll({
+        where: {
+          email: email,
+        },
+      });
+      if (!findUser) {
+        res.status(404).json({
+          status: "fail",
+          message: "please register first",
+        });
+        return;
+      }
+      const isPasswordCorrect = bcrypt.compareSync(
+        password,
+        findUser?.password
+      );
+      if (!isPasswordCorrect) {
+        res.status(401).json({
+          status: "fail",
+          message: "password is incorrect",
+        });
+        return;
+      }
+      req.session.user = {
+        email : findUser.email,
+        userId: String(findUser.id)
+      };
+      res.status(200).json({
+        status: "success",
+        message: "user login successfully",
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: "fail",
+        message: error.message,
+      });
+    }
+  }
+
+  public async fetchProfile(req: IEXRequest, res: Response) {
+    console.log(req.session);
+    const { userId, email } = req.session.user;
+    if (!userId || !email) {
+      res.status(404).json({
+        message: "id and email is not found from session",
+      });
+      return;
+    }
+
+    const user = await User.findByPk(userId,{
+        attributes:["id","username","email","role"]
+    });
+    res.json({
+      data: user,
+    });
+  }
+}
+
+const authController = new AuthController();
+export default authController;
