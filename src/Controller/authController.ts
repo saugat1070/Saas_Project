@@ -4,10 +4,14 @@ import bcrypt from "bcrypt";
 
 import { Session } from "express-session";
 import { tokenGen } from "../utils/tokenGen";
+import { IERequest } from "../config/interface";
 
-interface IEXRequest extends Request {
-  session: Session & { user?: any };
-}
+// Ensure your Express app uses body-parser middleware:
+// import express from "express";
+// import bodyParser from "body-parser";
+// const app = express();
+// app.use(bodyParser.json());
+
 
 class AuthController {
   constructor() {}
@@ -57,7 +61,7 @@ class AuthController {
     }
   }
 
-  public async loginUser(req: IEXRequest, res: Response) {
+  public async loginUser(req: Request, res: Response) {
     const { email, password } = req.body;
     if (!email || !password) {
       res.status(400).json({
@@ -93,7 +97,8 @@ class AuthController {
         email : findUser.email,
         userId: String(findUser.id)
       }; */
-      const token = tokenGen(findUser.id)
+      const token = tokenGen(findUser.id);
+      console.log(token)
       res.status(200).json({
         status: "success",
         message: "user login successfully",
@@ -106,8 +111,8 @@ class AuthController {
       });
     }
   }
-
-  public async fetchProfile(req: IEXRequest, res: Response) {
+// Session Authentication
+/*   public async fetchProfile(req: IEXRequest, res: Response) {
     if(!req.session.user){
         res.status(401).json({
             status : "fail",
@@ -128,6 +133,41 @@ class AuthController {
     res.json({
       data: user,
     });
+  } */
+
+  public async fetchProfile(req:IERequest,res:Response){
+    const {id:userId} = req.user
+    if(!userId){
+      res.status(401).json({
+        status : "fail",
+        message : "login first"
+      });return;
+    }
+    try {
+      const userInfo = await User.findAll({
+      where:{
+        id : userId
+      },
+      attributes:["id","username","email","role"]
+    });
+    if(!userInfo){
+      res.status(404).json({
+        status : "fail",
+        message : "user information is not fetch from database"
+      });return
+    }
+
+    res.status(200).json({
+      status : "success",
+      message : "profile fetch successfully",
+      data : userInfo
+    })
+    } catch (error : Error | any) {
+      res.status(500).json({
+        message : "Error on server",
+        Error : error.message
+      })
+    }
   }
 }
 
