@@ -7,5 +7,11 @@ export enum Role{
 }
 
 export interface IERequest extends Request{
-    user ?: any & {id : any} 
+    user ?: any & {
+        id : any
+    },
+    institute : any | null & {
+        instituteNumber : any,
+        instituteName : String
+    }
 }

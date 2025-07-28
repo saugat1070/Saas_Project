@@ -1,10 +1,11 @@
 import { Request,Response } from "express";
 import sequelize from "../../database/connection";
 import { instituteNumber } from "../../utils/instituteNumber";
+import { IERequest } from "../../config/interface";
 
 
 class InstituteController{
-    public async createInstitute(req:Request,res:Response){
+    public async createInstitute(req:IERequest,res:Response){
         const {instituteName,instituteEmail,institutePhoneNumber,
             instituteAddress
         } = req.body;
@@ -30,8 +31,9 @@ class InstituteController{
             updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )`);
 /* 
+
 INSERT INTO institute_${institutenumber}(
-instituteName,instituteEmail,institutePhoneNumber,instituteAddress,institutePhoneNumber
+instituteName,instituteEmail,institutePhoneNumber,instituteAddress,institutePhoneNumber)VALUES(?,?,?,?,?,?)
 )
 
 */
@@ -41,9 +43,39 @@ instituteName,instituteEmail,institutePhoneNumber,instituteAddress,institutePhon
                 replacements : [instituteName,instituteEmail,instituteEmail,institutePhoneNumber,institutePanNumber,instituteVatNumber]
             })
 
+        await sequelize.query(`CREATE TABLE teacher_${institutenumber}(
+            id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+            teacherEmail VARCHAR(255) NOT NULL UNIQUE,
+            teacherPhoneNumber VARCHAR(255) NOT NULL,
+            teacherAddress VARCHAR(255),
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TIMESTAMP DEFAULT CURREN_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)`)
+
+        req.institute ={
+            instituteNumber : institutenumber,
+            instituteName : String(instituteName)
+        } ;
+
             res.status(200).json({
                 message : "Database table is created"
             });
+    }
+
+    public createTeacherTable = async (req:IERequest,res:Response)=>{
+        const instituteNumber = req.institute.instituteNumber;
+        await sequelize.query(`CREATE TABLE teacher_${instituteNumber}(
+            id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+            teacherEmail VARCHAR(255) NOT NULL UNIQUE,
+            teacherPhoneNumber VARCHAR(255) NOT NULL,
+            teacherAddress VARCHAR(255),
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TIMESTAMP DEFAULT CURREN_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)`)
+            
+            
+            res.json({
+                message : "teacher is created"
+            });
+            
     }
 }
 

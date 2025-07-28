@@ -5,8 +5,8 @@ import { IERequest } from "../config/interface";
 
 
 export const isLogin = (req:IERequest,res:Response,next:NextFunction)=>{
-        const auth = req.headers?.authorization as string;
-        const token = auth && auth.startsWith("Bearer ") ? auth.split(" ")[1] : auth;
+    const auth = req.headers?.authorization as string;
+    const token = auth && auth.startsWith("Bearer ") ? auth.split(" ")[1] : auth;
     jwt.verify(token,envConfig.jwtSecretKey,(err:any,result:any)=>{
         if(err){
             res.status(401).json({
