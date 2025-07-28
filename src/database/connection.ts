@@ -16,7 +16,7 @@ sequelize.authenticate().then(()=>{
     console.log("Something error occur:"+err)
 })
 
-sequelize.sync({force:false,alter:false}).then(()=>{
+sequelize.sync({force:false,alter:true}).then(()=>{
     console.log("migrated successfully new changes")
 })
 

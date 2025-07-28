@@ -3,7 +3,7 @@ import { IERequest } from "../config/interface";
 
 class InstituteMiddleware{
     public passInstituteNumber = (req:IERequest,res:Response,next:NextFunction)=>{
-        if(!req.institute.instituteNumber){
+        if(!req.institute?.instituteNumber){
             res.status(404).json({
                 message : "institute number is not found"
             });

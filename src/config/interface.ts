@@ -10,7 +10,7 @@ export interface IERequest extends Request{
     user ?: any & {
         id : any
     },
-    institute : any | null & {
+    institute? : {
         instituteNumber : any,
         instituteName : String
     }
